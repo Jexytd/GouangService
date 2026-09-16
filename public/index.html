@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whitelist Portal &bull; Admin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Login Modal (Prompted if no token) -->
+    <div id="login-modal" class="modal-overlay active">
+        <div class="modal-card">
+            <div class="brand-header">
+                <div class="brand-logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                </div>
+                <h2>Admin Authentication</h2>
+                <p>Enter the dashboard secret configured in your server settings.</p>
+            </div>
+            <form id="login-form">
+                <div class="input-group">
+                    <label for="admin-secret-input">Dashboard Password / Secret</label>
+                    <input type="password" id="admin-secret-input" placeholder="••••••••••••••••" required>
+                </div>
+                <div id="login-error" class="error-msg hidden"></div>
+                <button type="submit" class="btn btn-primary btn-block">Unlock Dashboard</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Application Layout -->
+    <div id="app-layout" class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                        <polyline points="2 17 12 22 22 17"></polyline>
+                        <polyline points="2 12 12 17 22 12"></polyline>
+                    </svg>
+                </div>
+                <div>
+                    <span class="brand-name">RICOH SHIELD</span>
+                    <span class="brand-badge">PRO</span>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-item active" data-tab="overview">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    <span>Overview</span>
+                </button>
+                <button class="nav-item" data-tab="keys">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 2l-2 2m-1-1l-3 3m3-3l2 2m-2-2l-3 3"></path>
+                        <circle cx="7.5" cy="15.5" r="5.5"></circle>
+                        <path d="m11.5 11.5 8.5-8.5"></path>
+                    </svg>
+                    <span>License Keys</span>
+                </button>
+                <button class="nav-item" data-tab="global-key">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    </svg>
+                    <span>Global Key</span>
+                </button>
+                <button class="nav-item" data-tab="logs">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                    <span>Verification Logs</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button id="logout-btn" class="btn btn-ghost btn-sm">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span>Log Out</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div>
+                    <h1 id="page-title">Dashboard Overview</h1>
+                    <p class="subtitle">Real-time whitelist monitoring and entitlement control</p>
+                </div>
+                <div class="top-actions">
+                    <button class="btn btn-primary" id="open-gen-modal-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <span>Generate Key</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- TAB 1: OVERVIEW -->
+            <section id="tab-overview" class="tab-panel active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon purple">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Total Keys</span>
+                            <h3 id="stat-total-keys">0</h3>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon green">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Active Licenses</span>
+                            <h3 id="stat-active-keys">0</h3>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon blue">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Claimed by Users</span>
+                            <h3 id="stat-claimed-keys">0</h3>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon yellow">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                                <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                                <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                                <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                            </svg>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Device Bindings</span>
+                            <h3 id="stat-bindings">0</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Global Key Quick Status Card -->
+                <div class="card glass-banner">
+                    <div class="glass-banner-info">
+                        <div class="pill-badge" id="overview-global-pill">Global Key: Active</div>
+                        <h2>Public Free-Access Key</h2>
+                        <p>Allow players to test with the shared global key without registering on Discord (limited features).</p>
+                        <code class="code-box" id="overview-global-key-code">GLOBAL-FREE-2026</code>
+                    </div>
+                    <button class="btn btn-secondary" onclick="document.querySelector('[data-tab=global-key]').click()">
+                        Configure Global Key
+                    </button>
+                </div>
+            </section>
+
+            <!-- TAB 2: KEYS MANAGEMENT -->
+            <section id="tab-keys" class="tab-panel">
+                <div class="card table-card">
+                    <div class="table-toolbar">
+                        <div class="search-box">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <input type="text" id="keys-search-input" placeholder="Search by prefix, Discord ID, note...">
+                        </div>
+                        <div class="filter-group">
+                            <select id="keys-status-filter" class="select-input">
+                                <option value="">All Statuses</option>
+                                <option value="active">Active</option>
+                                <option value="revoked">Revoked</option>
+                                <option value="expired">Expired</option>
+                            </select>
+                            <select id="keys-tier-filter" class="select-input">
+                                <option value="">All Tiers</option>
+                                <option value="free">Free</option>
+                                <option value="premium">Premium</option>
+                                <option value="enterprise">Enterprise</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Key Prefix</th>
+                                    <th>Tier</th>
+                                    <th>Status</th>
+                                    <th>Claimed By (Discord)</th>
+                                    <th>Devices</th>
+                                    <th>Expires</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="keys-table-body">
+                                <tr><td colspan="7" class="text-center">Loading keys...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: GLOBAL KEY SETTINGS -->
+            <section id="tab-global-key" class="tab-panel">
+                <div class="card form-card">
+                    <div class="form-header">
+                        <h2>Global Key Settings</h2>
+                        <p>Configure the public shared key for unwhitelisted or trial users.</p>
+                    </div>
+
+                    <form id="global-key-form">
+                        <div class="form-switch-row">
+                            <div>
+                                <h4>Enable Global Key</h4>
+                                <p class="subtext">When enabled, anyone can authenticate with this key and receive free-tier features.</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="gk-enable-switch">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="gk-key-input">Global Key Value</label>
+                            <input type="text" id="gk-key-input" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="gk-features-input">Entitled Features (Comma Separated)</label>
+                            <input type="text" id="gk-features-input" value="basic" placeholder="basic, standard, demo">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="gk-note-input">Public Announcement / Note</label>
+                            <input type="text" id="gk-note-input" placeholder="Free trial access for community members">
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- TAB 4: VERIFICATION LOGS -->
+            <section id="tab-logs" class="tab-panel">
+                <div class="card table-card">
+                    <div class="table-header-simple">
+                        <h2>Recent Verifications</h2>
+                        <p>Real-time stream of incoming requests from Roblox clients.</p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Key Identifier</th>
+                                    <th>Status</th>
+                                    <th>Reason</th>
+                                    <th>Tier</th>
+                                    <th>Client Hash</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logs-table-body">
+                                <tr><td colspan="6" class="text-center">Loading logs...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Generate Key Modal -->
+    <div id="gen-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Generate New License</h3>
+                <button class="close-modal" id="close-gen-modal">&times;</button>
+            </div>
+            <form id="gen-key-form">
+                <div class="input-group">
+                    <label for="gen-tier">Tier</label>
+                    <select id="gen-tier" class="select-input">
+                        <option value="premium">Premium (All Features)</option>
+                        <option value="enterprise">Enterprise</option>
+                        <option value="free">Free / Basic</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="gen-duration">Duration (Days, 0 = Lifetime)</label>
+                    <input type="number" id="gen-duration" value="30" min="0" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="gen-max-clients">Max Device Bindings</label>
+                    <input type="number" id="gen-max-clients" value="1" min="1" max="10" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="gen-qty">Quantity to Generate</label>
+                    <input type="number" id="gen-qty" value="1" min="1" max="25" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="gen-note">Admin Note / Tag</label>
+                    <input type="text" id="gen-note" placeholder="Sold to user / Giveaway">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">Generate</button>
+            </form>
+
+            <div id="gen-result" class="gen-result-box hidden">
+                <h4>Created Keys (Copy Now - Won't be shown again!):</h4>
+                <div id="gen-keys-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

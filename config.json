@@ -1,0 +1,9 @@
+{
+    "token": "",
+    "port": 3000,
+    "dashboardPassword": "bosridho67",
+    "ownerId": "",
+    "adminRoleIds": [],
+    "serverSecret": "ricoh-chuko-lito-secret-salt-2026",
+    "corsOrigin": "*"
+}
