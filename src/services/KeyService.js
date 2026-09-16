@@ -17,7 +17,7 @@ class KeyService {
         return `${prefix}-${part1}-${part2}-${part3}`;
     }
 
-    static createKey({ tier = 'premium', durationDays = 30, maxClients = 1, createdBy = 'SYSTEM', note = '' } = {}) {
+    static createKey({ tier = 'premium', durationDays = 30, maxClients = 1, createdBy = 'SYSTEM', note = '', discordId = null } = {}) {
         const plainKey = this.generateRandomKey();
         const keyHash = this.hashValue(plainKey);
         const keyPrefix = `${plainKey.substring(0, 8)}****`;
@@ -37,7 +37,7 @@ class KeyService {
             tier: tier || 'premium',
             status: 'active',
             isGlobal: false,
-            discordId: null,
+            discordId: discordId || null,
             maxClients: parseInt(maxClients, 10) || 1,
             expiresAt,
             createdBy,

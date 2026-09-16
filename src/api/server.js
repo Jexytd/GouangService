@@ -204,20 +204,31 @@ app.get('/api/v1/admin/logs/audit', requireAdminAuth, (req, res) => {
 });
 
 // -------------------------------------------------------------
-// 3. STATIC FILES (Admin Dashboard Web UI)
+// 3. HEADLESS API HANDLERS (No Frontend UI on Service)
 // -------------------------------------------------------------
-app.use(express.static(path.resolve(__dirname, '../../public')));
+app.get('/', (req, res) => {
+    res.json({
+        status: 'online',
+        service: 'Ricoh Shield Headless API',
+        timestamp: new Date().toISOString()
+    });
+});
 
-// Catch-all fallback route to serve the dashboard SPA (Express 5 compatible)
+// 404 handler for unknown routes
 app.use((req, res) => {
-    res.sendFile(path.resolve(__dirname, '../../public/index.html'));
+    res.status(404).json({
+        success: false,
+        error: {
+            code: 'NOT_FOUND',
+            message: 'Endpoint not found.'
+        }
+    });
 });
 
 function startServer(port = config.port) {
     return new Promise((resolve) => {
         const server = app.listen(port, () => {
-            console.log(`[API Server] Running on http://localhost:${port}`);
-            console.log(`[Dashboard] Accessible at http://localhost:${port}`);
+            console.log(`[Headless API] Running on port ${port}`);
             resolve(server);
         });
     });
