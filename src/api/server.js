@@ -11,6 +11,9 @@ const LogService = require('../services/LogService');
 
 const app = express();
 
+// Enable Trust Proxy for Nginx Reverse Proxy (resolves real client IP from X-Forwarded-For)
+app.set('trust proxy', 1);
+
 // Security & Parsing Middlewares
 app.use(helmet({
     contentSecurityPolicy: false // Allow loading inline dashboard scripts & styles

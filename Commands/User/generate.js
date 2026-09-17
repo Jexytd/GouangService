@@ -20,7 +20,7 @@ module.exports = {
 
             const limitEmbed = new EmbedBuilder()
                 .setColor(0xef4444)
-                .setTitle('⚠️ Key Generation Limit Exceeded')
+                .setTitle('Key Generation Limit Exceeded')
                 .setDescription(`You already have an active license key. You cannot generate more than 1 active key at a time.`)
                 .addFields(
                     { name: 'Active Key Identifier', value: `\`${existingKey.keyPrefix}\``, inline: true },
@@ -52,16 +52,14 @@ module.exports = {
 
         const successEmbed = new EmbedBuilder()
             .setColor(0x10b981)
-            .setTitle('🎉 1-Day License Key Generated')
-            .setDescription(`Your temporary 1-day whitelist license key has been generated and bound to your account.\n\n⚠️ **Copy this key now!** It is hashed on the server and will not be displayed in plaintext again.`)
+            .setTitle('1-Day License Key Generated')
             .addFields(
-                { name: '🔑 License Key', value: `\`\`\`${plainKey}\`\`\`` },
+                { name: 'License Key', value: `\`\`\`${plainKey}\`\`\`` },
                 { name: 'Tier', value: `\`${keyRecord.tier.toUpperCase()}\``, inline: true },
                 { name: 'Duration', value: '1 Day (24 Hours)', inline: true },
                 { name: 'Expires', value: `<t:${expireTimestamp}:R> (<t:${expireTimestamp}:f>)`, inline: true },
                 { name: 'Max Devices', value: `${keyRecord.maxClients} Device`, inline: true }
             )
-            .setFooter({ text: 'Paste this key into Initialize.lua under CONFIG.UserKey to execute the script.' })
             .setTimestamp();
 
         await interaction.reply({
