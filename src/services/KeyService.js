@@ -230,20 +230,76 @@ class KeyService {
 
     static getStats() {
         const data = db.getData();
+        const now = new Date();
         const totalKeys = data.keys.length;
-        const activeKeys = data.keys.filter(k => k.status === 'active').length;
-        const claimedKeys = data.keys.filter(k => k.discordId !== null).length;
-        const totalBindings = data.bindings.length;
+        const activeKeys = data.keys.filter(k => k.status === 'active' && (!k.expiresAt || new Date(k.expiresAt) >= now)).length;
+        const expiredKeys = data.keys.filter(k => k.status === 'expired' || (k.expiresAt && new Date(k.expiresAt) < now)).length;
+        const revokedKeys = data.keys.filter(k => k.status === 'revoked').length;
+        const claimedKeys = data.keys.filter(k => k.discordId !== null && k.discordId !== undefined).length;
+        const unclaimedKeys = Math.max(0, totalKeys - claimedKeys);
+        const totalBindings = data.bindings ? data.bindings.length : 0;
         const globalKey = GlobalKeyService.getGlobalKey();
+
+        // Tier Breakdown
+        const tierBreakdown = {};
+        for (const k of data.keys) {
+            const tier = (k.tier || 'standard').toLowerCase();
+            tierBreakdown[tier] = (tierBreakdown[tier] || 0) + 1;
+        }
+
+        // Status Breakdown
+        const statusBreakdown = {
+            active: activeKeys,
+            expired: expiredKeys,
+            revoked: revokedKeys
+        };
+
+        // Claim Breakdown
+        const claimBreakdown = {
+            claimed: claimedKeys,
+            unclaimed: unclaimedKeys
+        };
+
+        // 7-day Activity Timeline
+        const activityTimeline = [];
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date(now);
+            d.setDate(d.getDate() - i);
+            const dateStr = d.toISOString().slice(0, 10);
+            const label = `${dayNames[d.getDay()]} (${monthNames[d.getMonth()]} ${d.getDate()})`;
+
+            const vLogs = (data.verificationLogs || []).filter(l => l.createdAt && l.createdAt.slice(0, 10) === dateStr);
+            const verificationsSuccess = vLogs.filter(l => l.success).length;
+            const verificationsFailed = vLogs.filter(l => !l.success).length;
+
+            const keysCreated = (data.keys || []).filter(k => k.createdAt && k.createdAt.slice(0, 10) === dateStr).length;
+
+            activityTimeline.push({
+                date: dateStr,
+                label,
+                verificationsSuccess,
+                verificationsFailed,
+                totalVerifications: vLogs.length,
+                keysCreated
+            });
+        }
 
         return {
             totalKeys,
             activeKeys,
             claimedKeys,
+            unclaimedKeys,
             totalBindings,
+            statusBreakdown,
+            tierBreakdown,
+            claimBreakdown,
+            activityTimeline,
             globalKeyEnabled: globalKey.enabled,
             globalKeyName: globalKey.key,
-            recentLogsCount: data.verificationLogs.length
+            recentLogsCount: (data.verificationLogs || []).length
         };
     }
 }
