@@ -2,7 +2,20 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 
-const DB_PATH = path.resolve(__dirname, '../../Database/whitelist.json');
+function resolveDbPath() {
+    if (process.env.DATABASE_FILE_PATH) {
+        return path.resolve(process.cwd(), process.env.DATABASE_FILE_PATH);
+    }
+    const monorepoPath = path.resolve(__dirname, '../../Database/whitelist.json');
+    if (fs.existsSync(monorepoPath)) return monorepoPath;
+
+    const localRepoPath = path.resolve(__dirname, '../Database/whitelist.json');
+    if (fs.existsSync(localRepoPath)) return localRepoPath;
+
+    return monorepoPath;
+}
+
+const DB_PATH = resolveDbPath();
 
 // Default initial state
 const DEFAULT_DATA = {

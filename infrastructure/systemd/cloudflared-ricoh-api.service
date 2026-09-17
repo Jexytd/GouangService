@@ -1,0 +1,22 @@
+[Unit]
+Description=Cloudflare Tunnel for Ricoh Shield API (api.tamammrbeast.my.id)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+User=root
+ExecStart=/usr/local/bin/cloudflared --config /etc/cloudflared/ricoh-api.yml tunnel run
+Restart=on-failure
+RestartSec=5s
+KillMode=mixed
+TimeoutStopSec=20s
+LimitNOFILE=65536
+
+# Security Hardening
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=read-only
+
+[Install]
+WantedBy=multi-user.target
