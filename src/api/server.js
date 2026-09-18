@@ -8,6 +8,11 @@ const KeyService = require('../services/KeyService');
 const GlobalKeyService = require('../services/GlobalKeyService');
 const VerificationService = require('../services/VerificationService');
 const LogService = require('../services/LogService');
+const GuildConfigService = require('../services/GuildConfigService');
+const ModerationService = require('../services/ModerationService');
+const TicketService = require('../services/TicketService');
+
+let discordClientRef = null;
 
 const app = express();
 
@@ -207,6 +212,78 @@ app.get('/api/v1/admin/logs/audit', requireAdminAuth, (req, res) => {
 });
 
 // -------------------------------------------------------------
+// Discord Bot Dashboard Integration
+// -------------------------------------------------------------
+app.get('/api/v1/admin/discord/stats', requireAdminAuth, (req, res) => {
+    const isBotOnline = discordClientRef ? Boolean(discordClientRef.isReady && discordClientRef.isReady()) : false;
+    const guildsCount = discordClientRef?.guilds?.cache?.size || 0;
+    let usersCount = 0;
+    if (discordClientRef?.guilds?.cache) {
+        for (const guild of discordClientRef.guilds.cache.values()) {
+            usersCount += (guild.memberCount || 0);
+        }
+    }
+    const ping = discordClientRef?.ws?.ping ?? -1;
+
+    const ticketsData = TicketService.getAllTickets({ limit: 1 });
+    const modData = ModerationService.getAllCases({ limit: 1 });
+
+    return res.json({
+        success: true,
+        stats: {
+            online: isBotOnline,
+            botTag: discordClientRef?.user?.tag || null,
+            uptime: Math.floor(process.uptime()),
+            ping,
+            guildsCount,
+            usersCount,
+            totalTickets: ticketsData.total,
+            totalModerationCases: modData.total
+        }
+    });
+});
+
+app.get('/api/v1/admin/discord/guilds', requireAdminAuth, (req, res) => {
+    if (!discordClientRef || !discordClientRef.isReady || !discordClientRef.isReady()) {
+        return res.json({ success: true, guilds: [] });
+    }
+
+    const guilds = Array.from(discordClientRef.guilds.cache.values()).map(g => {
+        const conf = GuildConfigService.getConfig(g.id);
+        return {
+            id: g.id,
+            name: g.name,
+            icon: typeof g.iconURL === 'function' ? g.iconURL() : null,
+            memberCount: g.memberCount,
+            ownerId: g.ownerId,
+            config: conf
+        };
+    });
+
+    return res.json({ success: true, guilds });
+});
+
+app.get('/api/v1/admin/discord/tickets', requireAdminAuth, (req, res) => {
+    const page = parseInt(req.query.page || '1', 10);
+    const limit = parseInt(req.query.limit || '20', 10);
+    const status = req.query.status || null;
+    const guildId = req.query.guildId || null;
+
+    const result = TicketService.getAllTickets({ page, limit, status, guildId });
+    return res.json({ success: true, ...result });
+});
+
+app.get('/api/v1/admin/discord/moderation', requireAdminAuth, (req, res) => {
+    const page = parseInt(req.query.page || '1', 10);
+    const limit = parseInt(req.query.limit || '20', 10);
+    const action = req.query.action || null;
+    const guildId = req.query.guildId || null;
+
+    const result = ModerationService.getAllCases({ page, limit, action, guildId });
+    return res.json({ success: true, ...result });
+});
+
+// -------------------------------------------------------------
 // 3. HEADLESS API HANDLERS (No Frontend UI on Service)
 // -------------------------------------------------------------
 app.get('/', (req, res) => {
@@ -228,7 +305,10 @@ app.use((req, res) => {
     });
 });
 
-function startServer(port = config.port) {
+function startServer(port = config.port, discordClient = null) {
+    if (discordClient) {
+        discordClientRef = discordClient;
+    }
     return new Promise((resolve) => {
         const server = app.listen(port, () => {
             console.log(`[Headless API] Running on port ${port}`);

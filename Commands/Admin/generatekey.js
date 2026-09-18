@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, ApplicationIntegrationType, InteractionContextType, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, ApplicationIntegrationType, InteractionContextType, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const KeyService = require('../../src/services/KeyService');
 const { isUserAdmin } = require('../../src/bot/permCheck');
 
@@ -31,6 +31,7 @@ module.exports = {
                 .setDescription('Optional admin note or user tag')
                 .setRequired(false)
         )
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
         .setIntegrationTypes([ApplicationIntegrationType.GuildInstall])
         .setContexts([InteractionContextType.Guild]),
 

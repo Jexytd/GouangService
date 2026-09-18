@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, ApplicationIntegrationType, InteractionContextType } = require('discord.js');
+const { SlashCommandBuilder, ApplicationIntegrationType, InteractionContextType, PermissionFlagsBits } = require('discord.js');
 const KeyService = require('../../src/services/KeyService');
 const { isUserAdmin } = require('../../src/bot/permCheck');
 
@@ -16,6 +16,7 @@ module.exports = {
                 .setDescription('The license key or key prefix to reset')
                 .setRequired(false)
         )
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
         .setIntegrationTypes([ApplicationIntegrationType.GuildInstall])
         .setContexts([InteractionContextType.Guild]),
 

@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, ApplicationIntegrationType, InteractionContextType, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, ApplicationIntegrationType, InteractionContextType, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const GlobalKeyService = require('../../src/services/GlobalKeyService');
 const { isUserAdmin } = require('../../src/bot/permCheck');
 
@@ -21,6 +21,7 @@ module.exports = {
                 .setDescription('Comma-separated feature list (e.g. basic, standard)')
                 .setRequired(false)
         )
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
         .setIntegrationTypes([ApplicationIntegrationType.GuildInstall])
         .setContexts([InteractionContextType.Guild]),
 

@@ -21,7 +21,7 @@ module.exports = {
 
         const embed = new EmbedBuilder()
             .setColor(0x10b981)
-            .setTitle('🛡️ Whitelist Status')
+            .setTitle('Whitelist Status')
             .addFields(
                 { name: 'Key Prefix', value: `\`${key.keyPrefix}\``, inline: true },
                 { name: 'Tier', value: `**${key.tier.toUpperCase()}**`, inline: true },

@@ -21,7 +21,7 @@ module.exports = {
 
         if (!result.success) {
             return interaction.reply({
-                content: `❌ **Redeem Failed:** ${result.message}`,
+                content: `**Redeem Failed:** ${result.message}`,
                 ephemeral: true
             });
         }
@@ -29,7 +29,7 @@ module.exports = {
         const key = result.keyRecord;
         const embed = new EmbedBuilder()
             .setColor(0x7c3aed)
-            .setTitle('🎉 Whitelist Key Redeemed!')
+            .setTitle('Whitelist Key Redeemed!')
             .setDescription(`Your license key has been successfully activated and bound to your account.`)
             .addFields(
                 { name: 'Key Identifier', value: `\`${key.keyPrefix}\``, inline: true },

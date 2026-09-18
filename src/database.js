@@ -23,6 +23,9 @@ const DEFAULT_DATA = {
     bindings: [],
     verificationLogs: [],
     auditLogs: [],
+    guildConfigs: [],
+    moderationCases: [],
+    tickets: [],
     settings: {
         globalKey: {
             enabled: true,
@@ -59,6 +62,9 @@ class Database {
                 if (!this.cache.bindings) this.cache.bindings = [];
                 if (!this.cache.verificationLogs) this.cache.verificationLogs = [];
                 if (!this.cache.auditLogs) this.cache.auditLogs = [];
+                if (!this.cache.guildConfigs) this.cache.guildConfigs = [];
+                if (!this.cache.moderationCases) this.cache.moderationCases = [];
+                if (!this.cache.tickets) this.cache.tickets = [];
             } catch (err) {
                 console.error("Failed to read database, initializing default data:", err);
                 this.cache = JSON.parse(JSON.stringify(DEFAULT_DATA));
