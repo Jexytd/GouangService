@@ -247,7 +247,20 @@ async function runTests() {
                     name: "Test Guild",
                     memberCount: 150,
                     ownerId: "123456789",
-                    iconURL: () => "https://example.com/icon.png"
+                    iconURL: () => "https://example.com/icon.png",
+                    channels: {
+                        cache: new Map([
+                            ["111111111111111111", { id: "111111111111111111", name: "mod-logs", type: 0 }],
+                            ["222222222222222222", { id: "222222222222222222", name: "welcome", type: 0 }],
+                            ["444444444444444444", { id: "444444444444444444", name: "Tickets", type: 4 }]
+                        ])
+                    },
+                    roles: {
+                        cache: new Map([
+                            ["333333333333333333", { id: "333333333333333333", name: "Member", hexColor: "#3b82f6", position: 1 }],
+                            ["555555555555555555", { id: "555555555555555555", name: "Staff", hexColor: "#ef4444", position: 5 }]
+                        ])
+                    }
                 }]
             ])
         }
@@ -279,6 +292,35 @@ async function runTests() {
             throw new Error("Discord stats API test failed");
         }
         console.log("  ✓ Discord Bot Stats Endpoint: Online | Guilds:", statsJson.stats.guildsCount, "| Ping:", statsJson.stats.ping);
+
+        // Test Discord Guild Details Endpoint (Channels & Roles)
+        const guildDetailsRes = await fetch(`http://127.0.0.1:${testPort}/api/v1/admin/discord/guilds/987654321012345678/details`, {
+            headers: { 'Authorization': `Bearer ${adminSecret}` }
+        });
+        const guildDetailsJson = await guildDetailsRes.json();
+        if (!guildDetailsJson.success || guildDetailsJson.channels.length < 3 || guildDetailsJson.roles.length < 2) {
+            throw new Error("Discord guild details API failed");
+        }
+        console.log(`  ✓ Discord Guild Details Endpoint (Returned ${guildDetailsJson.channels.length} channels & ${guildDetailsJson.roles.length} roles)`);
+
+        // Test Discord Guild Config PUT Endpoint
+        const putConfigRes = await fetch(`http://127.0.0.1:${testPort}/api/v1/admin/discord/guilds/987654321012345678/config`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${adminSecret}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                modLogChannelId: "111111111111111111",
+                welcomeChannelId: "222222222222222222",
+                welcomeMessage: "Dashboard welcome test"
+            })
+        });
+        const putConfigJson = await putConfigRes.json();
+        if (!putConfigJson.success || putConfigJson.config.welcomeMessage !== "Dashboard welcome test") {
+            throw new Error("Discord guild config PUT API failed");
+        }
+        console.log("  ✓ Discord Guild Config PUT Endpoint: Successfully saved settings via Dashboard API");
 
         // Test Discord Tickets Endpoint
         const ticketsRes = await fetch(`http://127.0.0.1:${testPort}/api/v1/admin/discord/tickets`, {

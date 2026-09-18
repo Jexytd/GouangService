@@ -263,6 +263,69 @@ app.get('/api/v1/admin/discord/guilds', requireAdminAuth, (req, res) => {
     return res.json({ success: true, guilds });
 });
 
+app.get('/api/v1/admin/discord/guilds/:guildId/details', requireAdminAuth, (req, res) => {
+    const { guildId } = req.params;
+    const config = GuildConfigService.getConfig(guildId);
+
+    if (!discordClientRef || !discordClientRef.isReady || !discordClientRef.isReady()) {
+        return res.json({
+            success: true,
+            guild: { id: guildId, name: `Guild (${guildId})` },
+            channels: [],
+            roles: [],
+            config
+        });
+    }
+
+    const guild = discordClientRef.guilds.cache.get(guildId);
+    if (!guild) {
+        return res.status(404).json({
+            success: false,
+            error: { code: 'GUILD_NOT_FOUND', message: 'Guild not found in bot cache.' }
+        });
+    }
+
+    // Extract channels
+    const channels = Array.from(guild.channels.cache.values()).map(c => ({
+        id: c.id,
+        name: c.name,
+        type: c.type,
+        parentId: c.parentId || null
+    })).sort((a, b) => a.name.localeCompare(b.name));
+
+    // Extract roles
+    const roles = Array.from(guild.roles.cache.values()).map(r => ({
+        id: r.id,
+        name: r.name,
+        color: r.hexColor,
+        position: r.position
+    })).sort((a, b) => b.position - a.position);
+
+    return res.json({
+        success: true,
+        guild: {
+            id: guild.id,
+            name: guild.name,
+            icon: typeof guild.iconURL === 'function' ? guild.iconURL() : null,
+            memberCount: guild.memberCount,
+            ownerId: guild.ownerId
+        },
+        channels,
+        roles,
+        config
+    });
+});
+
+app.put('/api/v1/admin/discord/guilds/:guildId/config', requireAdminAuth, (req, res) => {
+    const { guildId } = req.params;
+    const updated = GuildConfigService.updateConfig(guildId, req.body, 'DASHBOARD');
+    return res.json({
+        success: true,
+        message: 'Server configuration updated successfully.',
+        config: updated
+    });
+});
+
 app.get('/api/v1/admin/discord/tickets', requireAdminAuth, (req, res) => {
     const page = parseInt(req.query.page || '1', 10);
     const limit = parseInt(req.query.limit || '20', 10);
